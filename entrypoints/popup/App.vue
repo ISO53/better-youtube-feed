@@ -1,7 +1,7 @@
 <template>
 	<main class="popup">
 		<h1 class="title">Better Youtube Feed</h1>
-		<p class="status">Project scaffold — no features yet.</p>
+		<p class="status">Collector running.</p>
 	</main>
 </template>
 

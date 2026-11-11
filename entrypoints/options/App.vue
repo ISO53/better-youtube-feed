@@ -1,7 +1,7 @@
 <template>
 	<main class="options">
 		<h1 class="title">Better Youtube Feed</h1>
-		<p class="status">Project scaffold — settings, logs and stats will live here.</p>
+		<p class="status">Settings, logs and stats will live here.</p>
 	</main>
 </template>
 
