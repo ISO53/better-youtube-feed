@@ -1,6 +1,6 @@
 {
 	"name": "better-youtube-feed",
-	"version": "0.4.0",
+	"version": "0.5.0",
 	"description": "Stop YouTube from recommending videos you've already watched or keep ignoring. All data stays in your browser.",
 	"private": true,
 	"type": "module",
@@ -15,6 +15,7 @@
 	},
 	"dependencies": {
 		"idb": "^8.0.4",
+		"lucide-vue-next": "^1.0.0",
 		"vue": "^3.5.29"
 	},
 	"devDependencies": {

@@ -1,12 +1,26 @@
 <template>
 	<main class="popup">
 		<h1 class="title">Better Youtube Feed</h1>
-		<p class="status">Collector running.</p>
+		<p class="status">{{ statusLine }}</p>
+		<button class="open-settings" type="button" @click="openSettings">
+			<Settings :size="18" />
+			<span>Open settings</span>
+		</button>
 	</main>
 </template>
 
 <script setup>
-// Popup root. Feature summary and quick toggles will live here.
+import { Settings } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { browser } from 'wxt/browser';
+
+// Popup root: quick summary (grows per feature) + link to the full page.
+const statusLine = computed(() => 'Hiding watched videos.');
+
+// Open as an explicit full tab; independent of options_ui.open_in_tab state.
+function openSettings() {
+	browser.tabs.create({ url: browser.runtime.getURL('/options.html') });
+}
 </script>
 
 <style scoped>
@@ -26,9 +40,26 @@
 }
 
 .status {
-	margin: 4px 0 0;
+	margin: 4px 0 12px;
 	font-size: 12px;
 	color: var(--byf-text-dim);
+}
+
+.open-settings {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 14px;
+	font: 500 13px Roboto, 'YouTube Sans', system-ui, sans-serif;
+	color: var(--byf-surface);
+	background: var(--byf-text);
+	border: none;
+	border-radius: 18px;
+	cursor: pointer;
+}
+
+.open-settings .icon {
+	color: var(--byf-surface);
 }
 </style>
 

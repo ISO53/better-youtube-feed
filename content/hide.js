@@ -34,7 +34,11 @@ export async function initHider() {
  */
 export function applyHiding(card, info) {
 	// Whitelist check will live here (M3/M4): whitelisted videos never hide.
-	const hide = settings.hideWatched && info.watchedPct != null && info.watchedPct >= settings.watchedThresholdPct;
+	// pct > 0 keeps zero-progress bars unhidden even at a 0% threshold.
+	const hide =
+		settings.hideWatched &&
+		info.watchedPct > 0 &&
+		info.watchedPct >= settings.watchedThresholdPct;
 	card.classList.toggle(HIDDEN_CLASS, hide);
 	return hide;
 }
