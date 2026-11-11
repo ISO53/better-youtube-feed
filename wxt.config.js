@@ -7,5 +7,6 @@ export default defineConfig({
 		name: 'Better Youtube Feed',
 		description:
 			"Stop YouTube from recommending videos you've already watched or keep ignoring. All data stays in your browser.",
+		permissions: ['storage'],
 	},
 });

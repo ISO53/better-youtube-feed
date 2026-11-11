@@ -1,11 +1,8 @@
-// Card discovery + info extraction for YouTube feed surfaces.
-// Strategy (per research): anchor-driven discovery — query watch-links and
-// climb to the outer card container; selector cascades for title/channel;
-// watched state read from the card's Polymer `.data` with DOM fallbacks.
-// Every selector lives in this file so layout churn is fixed in one place.
+// Anchor-driven card discovery + info extraction for YouTube feed surfaces.
+// Every selector lives here so layout churn gets fixed in one place.
 
-// Ordered outer-container-first: hiding/reading on the outer wrapper avoids
-// empty grid slots when YouTube nests the new yt-lockup-view-model inside.
+// closest() returns the NEAREST match, i.e. the inner yt-lockup-view-model on
+// home/subs. findVideoCards normalizes up to the outer grid wrapper below.
 const CARD_CONTAINERS = [
 	'ytd-rich-item-renderer',
 	'ytd-video-renderer',
@@ -13,6 +10,15 @@ const CARD_CONTAINERS = [
 	'ytd-grid-video-renderer',
 	'ytd-playlist-video-renderer',
 	'yt-lockup-view-model',
+].join(',');
+
+// Wrappers worth hiding in grid surfaces, outermost wins via closest().
+const OUTER_CONTAINERS = [
+	'ytd-rich-item-renderer',
+	'ytd-video-renderer',
+	'ytd-compact-video-renderer',
+	'ytd-grid-video-renderer',
+	'ytd-playlist-video-renderer',
 ].join(',');
 
 // Cards that hold watch-links but are not feed videos.
@@ -53,8 +59,10 @@ export function findVideoCards(root) {
 	for (const anchor of anchors) {
 		const videoId = videoIdFromHref(anchor.getAttribute('href') || '');
 		if (!videoId) continue;
-		const card = anchor.closest(CARD_CONTAINERS);
-		if (!card || card.closest(CARD_EXCLUDES)) continue;
+		const nearest = anchor.closest(CARD_CONTAINERS);
+		if (!nearest || nearest.closest(CARD_EXCLUDES)) continue;
+		// Normalize to the outer grid wrapper when one wraps the container.
+		const card = nearest.closest(OUTER_CONTAINERS) || nearest;
 		if (!cards.has(videoId)) cards.set(videoId, card);
 	}
 	return cards;
@@ -102,15 +110,9 @@ function extractText(card, selectors) {
 }
 
 /**
- * Watched percentage, DOM-first.
- *
- * IMPORTANT (worlds): this runs in the content script's ISOLATED world, where
- * page-defined element properties like the Polymer `.data` accessor are
- * undefined. Only plain DOM (elements, attributes, style) is readable here.
- * The `.data` scan below therefore only fires if this code ever moves to a
- * MAIN-world module (planned for token extraction); the progress bar is the
- * signal that works today.
- *
+ * Watched percentage: DOM progress bar first, Polymer `.data` scan as fallback.
+ * ISOLATED-world note: `.data` is undefined in content scripts; the data scan
+ * only pays off if this ever runs in a MAIN-world module.
  * @returns {number|null} 0-100, or null when YouTube shows no progress
  */
 function findWatchedPct(card) {

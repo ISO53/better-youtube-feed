@@ -1,18 +1,10 @@
-// Feed-watching pipeline (content script side).
-// Discovers video cards that are actually on screen, keeps one session record
-// per video, and ships changes to the background script in batches.
-//
-// Triggers (belt and braces):
-//   - MutationObserver on body, batched through a 150ms pending-roots queue
-//   - yt-navigate-finish (YouTube SPA navigation)
-//   - 3s interval safety net
-//
-// Session record = VideoRecord + seenCountDelta (unsent on-screen hits).
-// The background script merges records into IndexedDB (see lib/db.js).
+// Content-script pipeline: collects on-screen cards into session records,
+// batches them to the background (IDB merge in lib/db.js).
 
 import { browser } from 'wxt/browser';
 
 import { findVideoCards, extractVideoInfo, currentSurface } from './extract.js';
+import { applyHiding, initHider } from './hide.js';
 
 const SCAN_INTERVAL_MS = 3000;
 const FLUSH_DELAY_MS = 150;
@@ -36,14 +28,20 @@ export function startFeedWatcher(ctx) {
 		const dirty = [];
 
 		for (const [videoId, card] of findVideoCards(root)) {
+			// Hiding applies to every discovered card, on-screen or not, so
+			// cards below the fold are hidden before the user scrolls to them.
+			const info = extractVideoInfo(card);
+			const hidden = applyHiding(card, info);
+
 			if (!isOnScreen(card)) continue;
 
 			const rec = session.get(videoId);
 			if (!rec) {
-				const info = extractVideoInfo(card);
 				const fresh = {
 					videoId,
 					...info,
+					hidden,
+					hiddenReason: hidden ? 'watched' : null,
 					surface,
 					firstSeen: now,
 					lastSeen: now,
@@ -67,13 +65,17 @@ export function startFeedWatcher(ctx) {
 				changed = true;
 			}
 			if (!rec.title || !rec.channel || !rec.watched) {
-				const info = extractVideoInfo(card);
 				for (const key of ['title', 'channel', 'watched', 'watchedPct']) {
 					if (info[key] && info[key] !== rec[key]) {
 						rec[key] = info[key];
 						changed = true;
 					}
 				}
+			}
+			if (rec.hidden !== hidden) {
+				rec.hidden = hidden;
+				rec.hiddenReason = hidden ? 'watched' : null;
+				changed = true;
 			}
 			if (changed) dirty.push(rec);
 		}
@@ -138,6 +140,6 @@ export function startFeedWatcher(ctx) {
 	}
 	ctx.onInvalidated(stop);
 
-	scan(document); // initial sweep
+	initHider().finally(() => scan(document)); // initial sweep (hider ready first)
 	return stop;
 }
