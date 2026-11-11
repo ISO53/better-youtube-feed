@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+	<defs>
+		<linearGradient id="shadeTri" gradientUnits="userSpaceOnUse" x1="44" y1="40" x2="90" y2="92">
+			<stop offset="0" stop-color="#55555a" />
+			<stop offset="0.5" stop-color="#1a1a1d" />
+			<stop offset="1" stop-color="#000" />
+		</linearGradient>
+		<!-- broom gradient in its own tilted space: lighter at the handle, black at the bristles -->
+		<linearGradient id="shadeBroom" gradientUnits="userSpaceOnUse" x1="0" y1="-58" x2="0" y2="48">
+			<stop offset="0" stop-color="#55555a" />
+			<stop offset="0.55" stop-color="#1a1a1d" />
+			<stop offset="1" stop-color="#000" />
+		</linearGradient>
+
+		<!-- transparent gap around the broom so it sits in front of the triangle -->
+		<mask id="triCut" maskUnits="userSpaceOnUse" x="-20" y="-20" width="200" height="200">
+			<rect x="-20" y="-20" width="200" height="200" fill="#fff" />
+			<g
+				transform="translate(92 70) rotate(30) scale(0.5)"
+				fill="#000"
+				stroke="#000"
+				stroke-width="14"
+				stroke-linejoin="round"
+				stroke-linecap="round"
+			>
+				<line x1="0" y1="-56" x2="0" y2="-8" stroke-width="20" />
+				<path d="M-11 4 Q-11 -6 0 -8 Q11 -6 11 4 Z" />
+				<path d="M-10 6 L10 6 L15 30 Q15 42 3 44 Q-18 47 -36 33 Q-18 28 -10 6 Z" />
+			</g>
+		</mask>
+		<!-- transparent bristle streaks (region enlarged so the white outline is not clipped) -->
+		<mask id="streaks" maskUnits="userSpaceOnUse" x="-50" y="-10" width="80" height="72">
+			<rect x="-50" y="-10" width="80" height="72" fill="#fff" />
+			<g stroke="#000" stroke-width="2.6" stroke-linecap="round" fill="none">
+				<path d="M3 16 Q5 30 1 42" />
+				<path d="M-5 15 Q-6 29 -13 40" />
+				<path d="M-12 19 Q-15 29 -24 37" />
+			</g>
+		</mask>
+	</defs>
+
+	<!-- whole composition centred on its measured bounds and scaled to fill ~87% of the canvas -->
+	<g transform="translate(64 64) scale(1.618) translate(-76.08 -72.77)">
+		<!-- white outline under the play triangle: wider white stroke peeks out around the gradient body -->
+		<polygon
+			mask="url(#triCut)"
+			points="50.3,47.3 50.3,84.7 83.4,66"
+			fill="none"
+			stroke="#fff"
+			stroke-width="15.6"
+			stroke-linejoin="round"
+		/>
+
+		<!-- play triangle (unchanged), cut where the broom passes in front -->
+		<polygon
+			mask="url(#triCut)"
+			points="50.3,47.3 50.3,84.7 83.4,66"
+			fill="url(#shadeTri)"
+			stroke="url(#shadeTri)"
+			stroke-width="12"
+			stroke-linejoin="round"
+		/>
+
+		<!-- broom: tilted handle, cap, sweeping bristle head, dust -->
+		<g transform="translate(92 70) rotate(30) scale(0.5)">
+			<!-- white outline underlay; widths compensate the group's scale(0.5) and the
+				     outer scale so every ring renders ~2.9px thick at canvas scale -->
+			<g fill="none" stroke="#fff" stroke-linejoin="round" stroke-linecap="round">
+				<line x1="0" y1="-56" x2="0" y2="-8" stroke-width="16.2" />
+				<path d="M-11 4 Q-11 -6 0 -8 Q11 -6 11 4 Z" stroke-width="7.2" />
+				<path
+					mask="url(#streaks)"
+					d="M-10 6 L10 6 L15 30 Q15 42 3 44 Q-18 47 -36 33 Q-18 28 -10 6 Z"
+					stroke-width="7.2"
+				/>
+				<circle cx="40" cy="36" r="4.6" stroke-width="4.7" />
+				<circle cx="30" cy="54" r="3.4" stroke-width="4.7" />
+				<circle cx="47" cy="52" r="2.4" stroke-width="4.6" />
+			</g>
+			<line x1="0" y1="-56" x2="0" y2="-8" stroke="url(#shadeBroom)" stroke-width="9" stroke-linecap="round" />
+			<path d="M-11 4 Q-11 -6 0 -8 Q11 -6 11 4 Z" fill="url(#shadeBroom)" />
+			<path
+				mask="url(#streaks)"
+				d="M-10 6 L10 6 L15 30 Q15 42 3 44 Q-18 47 -36 33 Q-18 28 -10 6 Z"
+				fill="url(#shadeBroom)"
+			/>
+			<g fill="none" stroke="url(#shadeBroom)" stroke-width="2.4">
+				<circle cx="40" cy="36" r="4.6" />
+				<circle cx="30" cy="54" r="3.4" />
+			</g>
+			<circle cx="47" cy="52" r="2.4" fill="url(#shadeBroom)" />
+		</g>
+	</g>
+</svg>

@@ -1,4 +1,10 @@
-# Better Youtube Feed
+<p align="center">
+	<img width="100%" src="public/icon/icon.svg">
+</p>
+
+<p align="center">
+    <b>Better Youtube Feed</b> - Hide what you've already watched and teach YouTube what you keep ignoring.
+</p>
 
 A browser extension that stops YouTube from showing you videos you've already watched or keep ignoring without opening and, optionally, sends YouTube's own "Not interested" feedback for them so the recommender learns to replace them with fresh ones over time.
 
