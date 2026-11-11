@@ -1,0 +1,25 @@
+{
+  "name": "better-youtube-feed",
+  "version": "0.1.0",
+  "description": "Stop YouTube from recommending videos you've already watched or keep ignoring. All data stays in your browser.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "postinstall": "wxt prepare"
+  },
+  "dependencies": {
+    "idb": "^8.0.4",
+    "vue": "^3.5.29"
+  },
+  "devDependencies": {
+    "@wxt-dev/module-vue": "^1.0.3",
+    "vite": "^8.1.5",
+    "wxt": "^0.21.3"
+  }
+}
