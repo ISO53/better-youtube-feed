@@ -18,13 +18,14 @@
 </template>
 
 <script setup>
-import { BarChart3, EyeOff, Logs, SlidersHorizontal } from 'lucide-vue-next';
+import { BarChart3, Database, EyeOff, Logs, SlidersHorizontal } from 'lucide-vue-next';
 
 const ICONS = {
 	settings: SlidersHorizontal,
 	logs: Logs,
 	stats: BarChart3,
 	hidden: EyeOff,
+	data: Database,
 };
 
 /** @param {{ key: string, icon: string, label: string }[]} items */

@@ -11,6 +11,7 @@
 import { computed, ref } from 'vue';
 
 import AppSidebar from '../../components/ui/AppSidebar.vue';
+import DataPage from './pages/DataPage.vue';
 import HiddenPage from './pages/HiddenPage.vue';
 import LogsPage from './pages/LogsPage.vue';
 import SettingsPage from './pages/SettingsPage.vue';
@@ -21,12 +22,14 @@ const PAGES = [
 	{ key: 'settings', icon: 'settings', label: 'Settings' },
 	{ key: 'hidden', icon: 'hidden', label: 'Hidden videos' },
 	{ key: 'logs', icon: 'logs', label: 'Logs' },
+	{ key: 'data', icon: 'data', label: 'Data' },
 ];
 
 const PAGE_COMPONENTS = {
 	settings: SettingsPage,
 	hidden: HiddenPage,
 	logs: LogsPage,
+	data: DataPage,
 };
 
 const activePage = ref('settings');
