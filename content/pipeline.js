@@ -6,7 +6,7 @@
 import { browser } from 'wxt/browser';
 
 import { findVideoCards, extractVideoInfo, currentSurface } from './extract.js';
-import { applyHiding, initHider, setWhitelist } from './hide.js';
+import { applyHiding, initHider, setRecorderWatched, setWhitelist } from './hide.js';
 
 const SCAN_INTERVAL_MS = 3000;
 const FLUSH_DELAY_MS = 150;
@@ -143,18 +143,20 @@ export function startFeedWatcher(ctx) {
 	const onNavigated = () => scan(document);
 	document.addEventListener('yt-navigate-finish', onNavigated);
 
-	// Live whitelist updates pushed by the background script.
+	// Live state (whitelist + recorder-watched) pushed by the background script.
 	const onRuntimeMessage = (message) => {
-		if (message?.type !== 'whitelist/updated') return;
-		setWhitelist(message.ids ?? []);
+		if (message?.type !== 'state/updated') return;
+		setWhitelist(message.whitelist ?? []);
+		setRecorderWatched(message.watched ?? []);
 		scan(document);
 	};
 	browser.runtime.onMessage.addListener(onRuntimeMessage);
 
-	async function loadWhitelist() {
+	async function loadState() {
 		try {
-			const res = await browser.runtime.sendMessage({ type: 'whitelist/get' });
-			setWhitelist(res?.ids ?? []);
+			const res = await browser.runtime.sendMessage({ type: 'state/get' });
+			setWhitelist(res?.whitelist ?? []);
+			setRecorderWatched(res?.watched ?? []);
 		} catch {
 			// extension context gone; nothing to do
 		}
@@ -170,8 +172,8 @@ export function startFeedWatcher(ctx) {
 	}
 	ctx.onInvalidated(stop);
 
-	// Initial sweep needs settings AND whitelist first, so flagged videos
-	// don't flash hidden before their first scan.
-	initHider().then(loadWhitelist).finally(() => scan(document));
+	// Initial sweep needs settings AND state sets first, so whitelisted and
+	// recorder-watched videos don't flash hidden before their first scan.
+	initHider().then(loadState).finally(() => scan(document));
 	return stop;
 }

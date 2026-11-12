@@ -16,6 +16,13 @@
 				</div>
 			</SettingsRow>
 		</SettingsGroup>
+
+		<SettingsGroup title="Watch recording">
+			<SettingsRow label="Record watches" desc="Mark videos as watched here when you play them past the threshold">
+				<ToggleSwitch :model-value="settings.recordWatches" label="Record watches"
+					@update:model-value="onRecordToggle" />
+			</SettingsRow>
+		</SettingsGroup>
 	</div>
 </template>
 
@@ -30,7 +37,7 @@ import { recordSettingsChange } from '../../../lib/events.js';
 import { getSettings, setSettings } from '../../../lib/settings.js';
 
 // Settings live-save via explicit handlers (v-model would also fire on load).
-const settings = reactive({ hideWatched: true, watchedThresholdPct: 50 });
+const settings = reactive({ hideWatched: true, watchedThresholdPct: 50, recordWatches: true });
 
 let thresholdTimer = null;
 
@@ -39,6 +46,7 @@ onMounted(async () => {
 	// 0% threshold is not offered; clamp any stored 0 up to the slider minimum.
 	settings.watchedThresholdPct = Math.max(10, stored.watchedThresholdPct);
 	settings.hideWatched = stored.hideWatched;
+	settings.recordWatches = stored.recordWatches;
 });
 
 onBeforeUnmount(() => clearTimeout(thresholdTimer));
@@ -47,6 +55,12 @@ function onHideToggle(value) {
 	settings.hideWatched = value;
 	setSettings({ hideWatched: value });
 	recordSettingsChange(`Hide watched videos turned ${value ? 'on' : 'off'}`);
+}
+
+function onRecordToggle(value) {
+	settings.recordWatches = value;
+	setSettings({ recordWatches: value });
+	recordSettingsChange(`Watch recording turned ${value ? 'on' : 'off'}`);
 }
 
 function onThreshold(value) {

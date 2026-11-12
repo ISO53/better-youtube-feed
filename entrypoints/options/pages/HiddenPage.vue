@@ -20,7 +20,7 @@
 				<span class="dim">{{ row.channel || '—' }}</span>
 			</template>
 			<template #cell-reason="{ row }">
-				<span class="dim">watched {{ pct(row) }}</span>
+				<span class="dim">watched {{ pct(row) }}{{ row.recorderWatched ? ' (recorded)' : '' }}</span>
 			</template>
 			<template #cell-lastSeen="{ row }">
 				<span class="dim">{{ formatDate(row.lastSeen) }}</span>
@@ -77,7 +77,7 @@ async function toggle(row) {
 	await setWhitelisted(row.videoId, added);
 	await recordWhitelist({ videoId: row.videoId, title: row.title }, added);
 	// Background pushes the fresh whitelist to every open YouTube tab.
-	browser.runtime.sendMessage({ type: 'whitelist/changed' }).catch(() => {});
+	browser.runtime.sendMessage({ type: 'state/changed' }).catch(() => {});
 	await load();
 }
 
