@@ -4,13 +4,14 @@
 
 		<SettingsGroup title="Watched videos">
 			<SettingsRow label="Hide watched videos" desc="Videos you already watched disappear from your feed">
-				<ToggleSwitch v-model="settings.hideWatched" label="Hide watched videos" />
+				<ToggleSwitch :model-value="settings.hideWatched" label="Hide watched videos"
+					@update:model-value="onHideToggle" />
 			</SettingsRow>
 
 			<SettingsRow label="Watched threshold" desc="Minimum watch progress before a video counts as watched">
 				<div class="threshold">
-					<SliderInput v-model="settings.watchedThresholdPct" :min="10" :step="10"
-						label="Watched threshold" />
+					<SliderInput :model-value="settings.watchedThresholdPct" :min="10" :step="10"
+						label="Watched threshold" @update:model-value="onThreshold" />
 					<span class="threshold-value">{{ settings.watchedThresholdPct }}%</span>
 				</div>
 			</SettingsRow>
@@ -19,17 +20,19 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, watch } from 'vue';
+import { onBeforeUnmount, onMounted, reactive } from 'vue';
 
 import SettingsGroup from '../../../components/ui/SettingsGroup.vue';
 import SettingsRow from '../../../components/ui/SettingsRow.vue';
 import SliderInput from '../../../components/ui/SliderInput.vue';
 import ToggleSwitch from '../../../components/ui/ToggleSwitch.vue';
+import { recordSettingsChange } from '../../../lib/events.js';
 import { getSettings, setSettings } from '../../../lib/settings.js';
 
-// Settings live-save: any change is written to storage immediately;
-// the content script reacts to storage changes live.
+// Settings live-save via explicit handlers (v-model would also fire on load).
 const settings = reactive({ hideWatched: true, watchedThresholdPct: 50 });
+
+let thresholdTimer = null;
 
 onMounted(async () => {
 	const stored = await getSettings();
@@ -38,9 +41,24 @@ onMounted(async () => {
 	settings.hideWatched = stored.hideWatched;
 });
 
-watch(settings, (value) => {
-	setSettings({ ...value });
-});
+onBeforeUnmount(() => clearTimeout(thresholdTimer));
+
+function onHideToggle(value) {
+	settings.hideWatched = value;
+	setSettings({ hideWatched: value });
+	recordSettingsChange(`Hide watched videos turned ${value ? 'on' : 'off'}`);
+}
+
+function onThreshold(value) {
+	settings.watchedThresholdPct = value;
+	setSettings({ watchedThresholdPct: value });
+	// Log once per drag, not per step.
+	clearTimeout(thresholdTimer);
+	thresholdTimer = setTimeout(
+		() => recordSettingsChange(`Watched threshold set to ${value}%`),
+		600,
+	);
+}
 </script>
 
 <style scoped>

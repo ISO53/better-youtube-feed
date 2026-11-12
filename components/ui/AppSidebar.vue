@@ -18,11 +18,11 @@
 </template>
 
 <script setup>
-import { BarChart3, EyeOff, ScrollText, SlidersHorizontal } from 'lucide-vue-next';
+import { BarChart3, EyeOff, Logs, SlidersHorizontal } from 'lucide-vue-next';
 
 const ICONS = {
 	settings: SlidersHorizontal,
-	logs: ScrollText,
+	logs: Logs,
 	stats: BarChart3,
 	hidden: EyeOff,
 };

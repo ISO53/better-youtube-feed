@@ -54,8 +54,11 @@ const WATCHED_BAR_SELECTORS = [
  */
 export function findVideoCards(root) {
 	const cards = new Map();
-	if (!root.querySelectorAll) return cards;
-	const anchors = root.querySelectorAll('a[href*="/watch?v="]');
+	// querySelectorAll sees descendants only; a root that IS an anchor needs
+	// an explicit check (mutation flush can pass bare anchor nodes).
+	const anchors = [];
+	if (root.matches?.('a[href*="/watch?v="]')) anchors.push(root);
+	if (root.querySelectorAll) anchors.push(...root.querySelectorAll('a[href*="/watch?v="]'));
 	for (const anchor of anchors) {
 		const videoId = videoIdFromHref(anchor.getAttribute('href') || '');
 		if (!videoId) continue;

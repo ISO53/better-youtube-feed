@@ -11,14 +11,19 @@
 import { computed, ref } from 'vue';
 
 import AppSidebar from '../../components/ui/AppSidebar.vue';
+import LogsPage from './pages/LogsPage.vue';
 import SettingsPage from './pages/SettingsPage.vue';
 
 // Page shell: YouTube-style sidebar (LinkedIn placement) + centered narrow
 // content column. New pages: add a PAGES entry + component in PAGE_COMPONENTS.
-const PAGES = [{ key: 'settings', icon: 'settings', label: 'Settings' }];
+const PAGES = [
+	{ key: 'settings', icon: 'settings', label: 'Settings' },
+	{ key: 'logs', icon: 'logs', label: 'Logs' },
+];
 
 const PAGE_COMPONENTS = {
 	settings: SettingsPage,
+	logs: LogsPage,
 };
 
 const activePage = ref('settings');
@@ -49,6 +54,7 @@ const pageComponent = computed(() => PAGE_COMPONENTS[activePage.value]);
 	--byf-raised: #f8f8f8;
 	--byf-hover: #f2f2f2;
 	--byf-border: #e5e5e5;
+	--byf-link: #065fd4;
 	--byf-switch-track: #c8c8c8;
 	--byf-switch-knob: #fafafa;
 	--byf-switch-track-on: #0f0f0f;
@@ -63,6 +69,7 @@ const pageComponent = computed(() => PAGE_COMPONENTS[activePage.value]);
 		--byf-raised: #1f1f1f;
 		--byf-hover: #272727;
 		--byf-border: #272727;
+		--byf-link: #3ea6ff;
 		--byf-switch-track: #545454;
 		--byf-switch-knob: #cfcfcf;
 		--byf-switch-track-on: #f1f1f1;
