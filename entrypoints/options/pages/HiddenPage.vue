@@ -20,7 +20,8 @@
 				<span class="dim">{{ row.channel || '—' }}</span>
 			</template>
 			<template #cell-reason="{ row }">
-				<span class="dim">watched {{ pct(row) }}{{ row.recorderWatched ? ' (recorded)' : '' }}</span>
+				<span v-if="row.hiddenReason === 'ignored'" class="dim">seen repeatedly</span>
+				<span v-else class="dim">watched {{ pct(row) }}{{ row.recorderWatched ? ' (recorded)' : '' }}</span>
 			</template>
 			<template #cell-lastSeen="{ row }">
 				<span class="dim">{{ formatDate(row.lastSeen) }}</span>

@@ -2,7 +2,9 @@
 	<div class="row">
 		<div class="text">
 			<span class="label">{{ label }}</span>
-			<span v-if="desc" class="desc">{{ desc }}</span>
+			<slot name="desc">
+				<span v-if="desc" class="desc">{{ desc }}</span>
+			</slot>
 		</div>
 		<div class="control">
 			<slot />

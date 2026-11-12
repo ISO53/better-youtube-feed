@@ -14,11 +14,14 @@
 				</button>
 			</li>
 		</ul>
+
+		<footer class="foot">v{{ version }}</footer>
 	</nav>
 </template>
 
 <script setup>
 import { BarChart3, Database, EyeOff, Logs, SlidersHorizontal } from 'lucide-vue-next';
+import { browser } from 'wxt/browser';
 
 const ICONS = {
 	settings: SlidersHorizontal,
@@ -36,6 +39,8 @@ defineProps({
 });
 
 defineEmits(['update:modelValue']);
+
+const version = browser.runtime.getManifest().version;
 </script>
 
 <style scoped>
@@ -106,5 +111,12 @@ defineEmits(['update:modelValue']);
 
 .label {
 	white-space: nowrap;
+}
+
+.foot {
+	margin-top: auto;
+	padding: 16px 12px 4px;
+	font-size: 11px;
+	color: var(--byf-text-dim);
 }
 </style>

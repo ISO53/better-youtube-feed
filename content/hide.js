@@ -11,6 +11,7 @@ const HIDDEN_CLASS = 'byf-hidden';
 let settings = { ...DEFAULT_SETTINGS };
 const whitelist = new Set(); // videoIds flagged "never hide" by the user
 const recorderWatched = new Set(); // videoIds the recorder marked watched
+const ignored = new Set(); // videoIds with too many recent sightings
 
 /**
  * Inject the hiding stylesheet and load current settings.
@@ -41,21 +42,33 @@ export function setRecorderWatched(ids) {
 	for (const id of ids) recorderWatched.add(id);
 }
 
+/** Replace the ignored set (pushed by the background script). */
+export function setIgnored(ids) {
+	ignored.clear();
+	for (const id of ids) ignored.add(id);
+}
+
 /**
- * Hide/unhide one card for the given video info.
+ * Hide/unhide one card and report why.
  * @param {Element} card
  * @param {{watched: boolean, watchedPct: number|null}} info - from extractVideoInfo
  * @param {string} videoId
- * @returns {boolean} true when the card is (now) hidden
+ * @returns {string|null} 'watched' | 'ignored' when hidden, null otherwise
  */
 export function applyHiding(card, info, videoId) {
+	const allowed = !whitelist.has(videoId);
 	// Two watched signals: YouTube's progress bar, or our own recorder.
 	// pct > 0 keeps zero-progress bars unhidden even at a 0% threshold.
-	const hide =
+	const watched =
+		allowed &&
 		settings.hideWatched &&
-		!whitelist.has(videoId) &&
 		(recorderWatched.has(videoId) ||
 			(info.watchedPct > 0 && info.watchedPct >= settings.watchedThresholdPct));
-	card.classList.toggle(HIDDEN_CLASS, hide);
-	return hide;
+	const reason = watched
+		? 'watched'
+		: allowed && settings.hideIgnored && ignored.has(videoId)
+			? 'ignored'
+			: null;
+	card.classList.toggle(HIDDEN_CLASS, reason != null);
+	return reason;
 }

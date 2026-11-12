@@ -6,7 +6,7 @@
 import { browser } from 'wxt/browser';
 
 import { findVideoCards, extractVideoInfo, currentSurface } from './extract.js';
-import { applyHiding, initHider, setRecorderWatched, setWhitelist } from './hide.js';
+import { applyHiding, initHider, setIgnored, setRecorderWatched, setWhitelist } from './hide.js';
 
 const SCAN_INTERVAL_MS = 3000;
 const FLUSH_DELAY_MS = 150;
@@ -94,7 +94,8 @@ export function startFeedWatcher(ctx) {
 
 		for (const [videoId, card] of findVideoCards(root)) {
 			const info = extractVideoInfo(card);
-			const hidden = applyHiding(card, info, videoId);
+			const hiddenReason = applyHiding(card, info, videoId);
+			const hidden = hiddenReason != null;
 
 			// Observe each card element once; recycled elements update their id.
 			if (!observedCards.has(card)) exposure.observe(card);
@@ -106,7 +107,7 @@ export function startFeedWatcher(ctx) {
 					videoId,
 					...info,
 					hidden,
-					hiddenReason: hidden ? 'watched' : null,
+					hiddenReason,
 					surface,
 					firstSeen: now,
 					lastSeen: 0, // exposure observer sets this on first real sighting
@@ -132,9 +133,9 @@ export function startFeedWatcher(ctx) {
 					}
 				}
 			}
-			if (rec.hidden !== hidden) {
+			if (rec.hidden !== hidden || rec.hiddenReason !== hiddenReason) {
 				rec.hidden = hidden;
-				rec.hiddenReason = hidden ? 'watched' : null;
+				rec.hiddenReason = hiddenReason;
 				changed = true;
 			}
 			if (changed) dirty.add(rec);
@@ -156,11 +157,12 @@ export function startFeedWatcher(ctx) {
 	const onNavigated = () => scan(document);
 	document.addEventListener('yt-navigate-finish', onNavigated);
 
-	// Live state (whitelist + recorder-watched) pushed by the background script.
+	// Live state (whitelist + recorder-watched + ignored) from the background.
 	const onRuntimeMessage = (message) => {
 		if (message?.type !== 'state/updated') return;
 		setWhitelist(message.whitelist ?? []);
 		setRecorderWatched(message.watched ?? []);
+		setIgnored(message.ignored ?? []);
 		scan(document);
 	};
 	browser.runtime.onMessage.addListener(onRuntimeMessage);
@@ -170,6 +172,7 @@ export function startFeedWatcher(ctx) {
 			const res = await browser.runtime.sendMessage({ type: 'state/get' });
 			setWhitelist(res?.whitelist ?? []);
 			setRecorderWatched(res?.watched ?? []);
+			setIgnored(res?.ignored ?? []);
 		} catch {
 			// extension context gone; nothing to do
 		}
@@ -184,6 +187,9 @@ export function startFeedWatcher(ctx) {
 		browser.runtime.onMessage.removeListener(onRuntimeMessage);
 	}
 	ctx.onInvalidated(stop);
+
+	// Version stamp: instantly reveals stale builds while testing.
+	console.debug(`[byf] feed watcher v${browser.runtime.getManifest().version} started`);
 
 	// Initial sweep needs settings AND state sets first, so whitelisted and
 	// recorder-watched videos don't flash hidden before their first scan.

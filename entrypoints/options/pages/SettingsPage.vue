@@ -23,6 +23,33 @@
 					@update:model-value="onRecordToggle" />
 			</SettingsRow>
 		</SettingsGroup>
+
+		<SettingsGroup title="Ignored videos">
+			<SettingsRow label="Hide ignored videos">
+				<template #desc>
+					<span class="desc">Videos you saw <b>{{ settings.ignoreThreshold }} times</b> in the
+						past <b>{{ settings.ignoreWindowDays }} days</b> will disappear from your feed.</span>
+				</template>
+				<ToggleSwitch :model-value="settings.hideIgnored" label="Hide ignored videos"
+					@update:model-value="onIgnoredToggle" />
+			</SettingsRow>
+
+			<SettingsRow label="Ignore threshold" desc="Sightings within the window before a video counts as ignored">
+				<div class="threshold">
+					<SliderInput :model-value="settings.ignoreThreshold" :min="3" :max="10" :step="1"
+						label="Ignore threshold" @update:model-value="onIgnoreThreshold" />
+					<span class="threshold-value">{{ settings.ignoreThreshold }}×</span>
+				</div>
+			</SettingsRow>
+
+			<SettingsRow label="Within" desc="How far back sightings are counted">
+				<div class="threshold">
+					<SliderInput :model-value="settings.ignoreWindowDays" :min="7" :max="30" :step="1"
+						label="Exposure window" @update:model-value="onIgnoreWindow" />
+					<span class="threshold-value">{{ settings.ignoreWindowDays }} days</span>
+				</div>
+			</SettingsRow>
+		</SettingsGroup>
 	</div>
 </template>
 
@@ -37,9 +64,18 @@ import { recordSettingsChange } from '../../../lib/events.js';
 import { getSettings, setSettings } from '../../../lib/settings.js';
 
 // Settings live-save via explicit handlers (v-model would also fire on load).
-const settings = reactive({ hideWatched: true, watchedThresholdPct: 50, recordWatches: true });
+const settings = reactive({
+	hideWatched: true,
+	watchedThresholdPct: 50,
+	recordWatches: true,
+	hideIgnored: true,
+	ignoreThreshold: 5,
+	ignoreWindowDays: 14,
+});
 
 let thresholdTimer = null;
+let ignoreTimer = null;
+let windowTimer = null;
 
 onMounted(async () => {
 	const stored = await getSettings();
@@ -47,9 +83,16 @@ onMounted(async () => {
 	settings.watchedThresholdPct = Math.max(10, stored.watchedThresholdPct);
 	settings.hideWatched = stored.hideWatched;
 	settings.recordWatches = stored.recordWatches;
+	settings.hideIgnored = stored.hideIgnored;
+	settings.ignoreThreshold = stored.ignoreThreshold;
+	settings.ignoreWindowDays = stored.ignoreWindowDays;
 });
 
-onBeforeUnmount(() => clearTimeout(thresholdTimer));
+onBeforeUnmount(() => {
+	clearTimeout(thresholdTimer);
+	clearTimeout(ignoreTimer);
+	clearTimeout(windowTimer);
+});
 
 function onHideToggle(value) {
 	settings.hideWatched = value;
@@ -70,6 +113,32 @@ function onThreshold(value) {
 	clearTimeout(thresholdTimer);
 	thresholdTimer = setTimeout(
 		() => recordSettingsChange(`Watched threshold set to ${value}%`),
+		600,
+	);
+}
+
+function onIgnoredToggle(value) {
+	settings.hideIgnored = value;
+	setSettings({ hideIgnored: value });
+	recordSettingsChange(`Hide ignored videos turned ${value ? 'on' : 'off'}`);
+}
+
+function onIgnoreThreshold(value) {
+	settings.ignoreThreshold = value;
+	setSettings({ ignoreThreshold: value });
+	clearTimeout(ignoreTimer);
+	ignoreTimer = setTimeout(
+		() => recordSettingsChange(`Ignore threshold set to ${value}x`),
+		600,
+	);
+}
+
+function onIgnoreWindow(value) {
+	settings.ignoreWindowDays = value;
+	setSettings({ ignoreWindowDays: value });
+	clearTimeout(windowTimer);
+	windowTimer = setTimeout(
+		() => recordSettingsChange(`Exposure window set to ${value} days`),
 		600,
 	);
 }
@@ -100,5 +169,17 @@ function onThreshold(value) {
 	font-size: 13px;
 	color: var(--byf-text);
 	text-align: right;
+}
+
+.desc {
+	display: block;
+	margin-top: 4px;
+	font-size: 12px;
+	color: var(--byf-text-dim);
+}
+
+.desc b {
+	font-weight: 500;
+	color: var(--byf-text);
 }
 </style>
