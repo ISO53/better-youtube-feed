@@ -1,13 +1,21 @@
 import { browser } from 'wxt/browser';
 
 import {
+	completeFeedback,
+	enqueueFeedback,
 	getIgnoredIds,
+	getPendingFeedback,
 	getRecorderWatchedIds,
 	getWhitelistedIds,
 	markVideoWatched,
 	upsertVideos,
 } from '../lib/db.js';
-import { recordVideoEvents, recordWatched } from '../lib/events.js';
+import {
+	recordFeedbackFailed,
+	recordFeedbackSent,
+	recordVideoEvents,
+	recordWatched,
+} from '../lib/events.js';
 import { getSettings } from '../lib/settings.js';
 
 export default defineBackground(() => {
@@ -31,6 +39,13 @@ export default defineBackground(() => {
 			return true; // async response
 		} else if (message?.type === 'state/changed') {
 			broadcastState();
+		} else if (message?.type === 'feedback/consider') {
+			onFeedbackConsider(message);
+		} else if (message?.type === 'feedback/drain') {
+			getPendingFeedback().then((pending) => sendResponse({ pending }));
+			return true; // async response
+		} else if (message?.type === 'feedback/result') {
+			onFeedbackResult(message);
 		}
 	});
 
@@ -55,6 +70,38 @@ export default defineBackground(() => {
 		const settings = await getSettings();
 		if (!settings.hideIgnored) return [];
 		return getIgnoredIds(settings.ignoreThreshold, settings.ignoreWindowDays);
+	}
+
+	// Policy: queue one feedback per video when the setting allows it.
+	async function onFeedbackConsider(message) {
+		try {
+			const settings = await getSettings();
+			if (!settings.sendFeedback || !message.tokens?.ni) return;
+			await enqueueFeedback({
+				videoId: message.videoId,
+				title: message.title ?? '',
+				type: message.kind === 'watched' ? 'ni_watched' : 'ni_ignored',
+				tokens: message.tokens,
+			});
+		} catch (err) {
+			console.error('[byf] feedback enqueue failed:', err);
+		}
+	}
+
+	async function onFeedbackResult(message) {
+		try {
+			await completeFeedback(message.videoId, Boolean(message.ok));
+			if (message.ok) {
+				await recordFeedbackSent(
+					{ videoId: message.videoId, title: message.title },
+					Boolean(message.withReason),
+				);
+			} else {
+				await recordFeedbackFailed({ videoId: message.videoId, title: message.title });
+			}
+		} catch (err) {
+			console.error('[byf] feedback result failed:', err);
+		}
 	}
 
 	// Broadcast only when the ignored set actually changed (upserts are frequent).

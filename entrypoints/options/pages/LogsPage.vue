@@ -46,6 +46,7 @@ const FILTERS = [
 	{ value: 'unhide', label: 'Unhidden' },
 	{ value: 'whitelist', label: 'Whitelist' },
 	{ value: 'watch', label: 'Watched' },
+	{ value: 'feedback', label: 'Feedback' },
 	{ value: 'settings', label: 'Settings' },
 	{ value: 'error', label: 'Errors' },
 ];
@@ -153,6 +154,10 @@ onUnmounted(() => clearInterval(pollTimer));
 
 .badge-watch {
 	color: #c9a227;
+}
+
+.badge-feedback {
+	color: #b39ddb;
 }
 
 .video {

@@ -29,7 +29,7 @@
 			<SettingsRow label="Hide ignored videos">
 				<template #desc>
 					<span class="desc">Videos you saw <b>{{ settings.ignoreThreshold }} times</b> in the
-						past <b>{{ settings.ignoreWindowDays }} days</b> will disappear from your feed.</span>
+						past <b>{{ settings.ignoreWindowDays }} days</b> without watching them will disappear from your feed.</span>
 				</template>
 				<ToggleSwitch :model-value="settings.hideIgnored" label="Hide ignored videos"
 					@update:model-value="onIgnoredToggle" />
@@ -50,6 +50,14 @@
 						label="Exposure window" :disabled="!settings.hideIgnored" @update:model-value="onIgnoreWindow" />
 					<span class="threshold-value">{{ settings.ignoreWindowDays }} days</span>
 				</div>
+			</SettingsRow>
+		</SettingsGroup>
+
+		<SettingsGroup title="Feedback">
+			<SettingsRow label="Send feedback"
+				desc="Send YouTube's own Not interested signal for hidden videos, so recommendations improve over time">
+				<ToggleSwitch :model-value="settings.sendFeedback" label="Send feedback"
+					@update:model-value="onFeedbackToggle" />
 			</SettingsRow>
 		</SettingsGroup>
 	</div>
@@ -73,6 +81,7 @@ const settings = reactive({
 	hideIgnored: true,
 	ignoreThreshold: 5,
 	ignoreWindowDays: 14,
+	sendFeedback: true,
 });
 
 let thresholdTimer = null;
@@ -88,6 +97,7 @@ onMounted(async () => {
 	settings.hideIgnored = stored.hideIgnored;
 	settings.ignoreThreshold = stored.ignoreThreshold;
 	settings.ignoreWindowDays = stored.ignoreWindowDays;
+	settings.sendFeedback = stored.sendFeedback;
 });
 
 onBeforeUnmount(() => {
@@ -133,6 +143,12 @@ function onIgnoreThreshold(value) {
 		() => recordSettingsChange(`Ignore threshold set to ${value}x`),
 		600,
 	);
+}
+
+function onFeedbackToggle(value) {
+	settings.sendFeedback = value;
+	setSettings({ sendFeedback: value });
+	recordSettingsChange(`Send feedback turned ${value ? 'on' : 'off'}`);
 }
 
 function onIgnoreWindow(value) {

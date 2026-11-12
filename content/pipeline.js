@@ -5,6 +5,7 @@
 
 import { browser } from 'wxt/browser';
 
+import { requestTokens, sendNotInterested } from './bridge.js';
 import { findVideoCards, extractVideoInfo, currentSurface } from './extract.js';
 import { applyHiding, initHider, setIgnored, setRecorderWatched, setWhitelist } from './hide.js';
 
@@ -25,6 +26,7 @@ export function startFeedWatcher(ctx) {
 	const session = new Map(); // videoId -> session record
 	const observedCards = new Map(); // card element -> videoId (grows per page session)
 	const dirty = new Set(); // session records with unsent changes
+	const feedbackConsidered = new Set(); // videoIds already offered for feedback
 	const pendingRoots = new Set();
 	let flushTimer = null;
 
@@ -115,6 +117,7 @@ export function startFeedWatcher(ctx) {
 				};
 				session.set(videoId, fresh);
 				dirty.add(fresh);
+				if (hidden) considerFeedback(videoId, fresh.title, hiddenReason);
 				continue;
 			}
 
@@ -137,11 +140,65 @@ export function startFeedWatcher(ctx) {
 				rec.hidden = hidden;
 				rec.hiddenReason = hiddenReason;
 				changed = true;
+				if (hidden) considerFeedback(videoId, rec.title, hiddenReason);
 			}
 			if (changed) dirty.add(rec);
 		}
 
 		flushDirty();
+	}
+
+	// Offer a newly hidden video to the background for a feedback send;
+	// tokens are captured fresh from the (still present) card element.
+	function considerFeedback(videoId, title, reason) {
+		if (feedbackConsidered.has(videoId)) return;
+		feedbackConsidered.add(videoId);
+		requestTokens(videoId)
+			.then((tokens) => {
+				if (!tokens) {
+					console.warn('[byf] no feedback tokens for', videoId);
+					return;
+				}
+				return browser.runtime.sendMessage({
+					type: 'feedback/consider',
+					videoId,
+					title,
+					kind: reason,
+					tokens,
+				});
+			})
+			.then(() => drainFeedback())
+			.catch((err) => console.warn('[byf] feedback consider failed:', err));
+	}
+
+	// Sends queued feedback one at a time through the MAIN-world bridge.
+	// Single-flight: many consider-chains can trigger drains concurrently.
+	let draining = false;
+	async function drainFeedback() {
+		if (draining) return;
+		draining = true;
+		try {
+			const res = await browser.runtime.sendMessage({ type: 'feedback/drain' });
+			for (const item of res?.pending ?? []) {
+				const result = await sendNotInterested(item.tokens, item.type === 'ni_watched');
+				if (!result?.ok) {
+					console.warn('[byf] feedback send failed for', item.videoId, result?.error);
+				}
+				await browser.runtime
+					.sendMessage({
+						type: 'feedback/result',
+						videoId: item.videoId,
+						title: item.title,
+						ok: Boolean(result?.ok),
+						withReason: item.type === 'ni_watched',
+					})
+					.catch((err) => console.warn('[byf] feedback result failed:', err));
+			}
+		} catch (err) {
+			console.warn('[byf] feedback drain failed:', err);
+		} finally {
+			draining = false;
+		}
 	}
 
 	const observer = new MutationObserver((mutations) => {
@@ -193,6 +250,11 @@ export function startFeedWatcher(ctx) {
 
 	// Initial sweep needs settings AND state sets first, so whitelisted and
 	// recorder-watched videos don't flash hidden before their first scan.
-	initHider().then(loadState).finally(() => scan(document));
+	initHider()
+		.then(loadState)
+		.finally(() => {
+			scan(document);
+			drainFeedback(); // items queued before this page loaded
+		});
 	return stop;
 }

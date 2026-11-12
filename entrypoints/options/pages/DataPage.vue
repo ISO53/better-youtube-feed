@@ -49,6 +49,7 @@ const stores = reactive([
 	{ key: 'videos', label: 'Videos', desc: 'Collected video records', count: 0, bytes: 0 },
 	{ key: 'logs', label: 'Logs', desc: 'Event history (capped at 500 entries)', count: 0, bytes: 0 },
 	{ key: 'stats', label: 'Stats', desc: 'Daily counters for charts', count: 0, bytes: 0 },
+	{ key: 'feedback', label: 'Feedback', desc: 'Not-interested send history', count: 0, bytes: 0 },
 ]);
 const settingsCount = ref(0);
 const settingsBytes = ref(0);
