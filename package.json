@@ -1,6 +1,6 @@
 {
 	"name": "better-youtube-feed",
-	"version": "0.10.0",
+	"version": "0.10.1",
 	"description": "Stop YouTube from recommending videos you've already watched or keep ignoring. All data stays in your browser.",
 	"private": true,
 	"type": "module",

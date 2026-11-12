@@ -8,10 +8,11 @@
 					@update:model-value="onHideToggle" />
 			</SettingsRow>
 
-			<SettingsRow label="Watched threshold" desc="Minimum watch progress before a video counts as watched">
+			<SettingsRow label="Watched threshold" desc="Minimum watch progress before a video counts as watched"
+				:disabled="!settings.hideWatched">
 				<div class="threshold">
 					<SliderInput :model-value="settings.watchedThresholdPct" :min="10" :step="10"
-						label="Watched threshold" @update:model-value="onThreshold" />
+						label="Watched threshold" :disabled="!settings.hideWatched" @update:model-value="onThreshold" />
 					<span class="threshold-value">{{ settings.watchedThresholdPct }}%</span>
 				</div>
 			</SettingsRow>
@@ -34,18 +35,19 @@
 					@update:model-value="onIgnoredToggle" />
 			</SettingsRow>
 
-			<SettingsRow label="Ignore threshold" desc="Sightings within the window before a video counts as ignored">
+			<SettingsRow label="Ignore threshold" desc="Sightings within the window before a video counts as ignored"
+				:disabled="!settings.hideIgnored">
 				<div class="threshold">
 					<SliderInput :model-value="settings.ignoreThreshold" :min="3" :max="10" :step="1"
-						label="Ignore threshold" @update:model-value="onIgnoreThreshold" />
+						label="Ignore threshold" :disabled="!settings.hideIgnored" @update:model-value="onIgnoreThreshold" />
 					<span class="threshold-value">{{ settings.ignoreThreshold }}×</span>
 				</div>
 			</SettingsRow>
 
-			<SettingsRow label="Within" desc="How far back sightings are counted">
+			<SettingsRow label="Within" desc="How far back sightings are counted" :disabled="!settings.hideIgnored">
 				<div class="threshold">
 					<SliderInput :model-value="settings.ignoreWindowDays" :min="7" :max="30" :step="1"
-						label="Exposure window" @update:model-value="onIgnoreWindow" />
+						label="Exposure window" :disabled="!settings.hideIgnored" @update:model-value="onIgnoreWindow" />
 					<span class="threshold-value">{{ settings.ignoreWindowDays }} days</span>
 				</div>
 			</SettingsRow>

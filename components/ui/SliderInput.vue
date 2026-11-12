@@ -1,6 +1,6 @@
 <template>
 	<input class="slider" type="range" :min="min" :max="max" :step="step" :value="modelValue" :aria-label="label"
-		@input="$emit('update:modelValue', Number($event.target.value))" />
+		:disabled="disabled" @input="$emit('update:modelValue', Number($event.target.value))" />
 </template>
 
 <script setup>
@@ -12,6 +12,7 @@ const props = defineProps({
 	max: { type: Number, default: 100 },
 	step: { type: Number, default: 1 },
 	label: { type: String, default: '' },
+	disabled: { type: Boolean, default: false },
 });
 
 defineEmits(['update:modelValue']);
@@ -55,5 +56,10 @@ const track = computed(
 	border: none;
 	border-radius: 50%;
 	background: var(--byf-text);
+}
+
+.slider:disabled {
+	opacity: 0.6;
+	cursor: default;
 }
 </style>

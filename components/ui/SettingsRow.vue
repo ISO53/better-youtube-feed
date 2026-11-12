@@ -1,5 +1,5 @@
 <template>
-	<div class="row">
+	<div :class="['row', { disabled }]">
 		<div class="text">
 			<span class="label">{{ label }}</span>
 			<slot name="desc">
@@ -16,6 +16,7 @@
 defineProps({
 	label: { type: String, required: true },
 	desc: { type: String, default: '' },
+	disabled: { type: Boolean, default: false },
 });
 </script>
 
@@ -48,5 +49,15 @@ defineProps({
 
 .control {
 	flex-shrink: 0;
+}
+
+/* Dependent settings dim when their master toggle is off. */
+.row.disabled .text {
+	opacity: 0.45;
+}
+
+.row.disabled .control {
+	pointer-events: none;
+	opacity: 0.45;
 }
 </style>
