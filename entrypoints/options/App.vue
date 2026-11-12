@@ -11,6 +11,7 @@
 import { computed, ref } from 'vue';
 
 import AppSidebar from '../../components/ui/AppSidebar.vue';
+import HiddenPage from './pages/HiddenPage.vue';
 import LogsPage from './pages/LogsPage.vue';
 import SettingsPage from './pages/SettingsPage.vue';
 
@@ -18,11 +19,13 @@ import SettingsPage from './pages/SettingsPage.vue';
 // content column. New pages: add a PAGES entry + component in PAGE_COMPONENTS.
 const PAGES = [
 	{ key: 'settings', icon: 'settings', label: 'Settings' },
+	{ key: 'hidden', icon: 'hidden', label: 'Hidden videos' },
 	{ key: 'logs', icon: 'logs', label: 'Logs' },
 ];
 
 const PAGE_COMPONENTS = {
 	settings: SettingsPage,
+	hidden: HiddenPage,
 	logs: LogsPage,
 };
 
@@ -39,7 +42,7 @@ const pageComponent = computed(() => PAGE_COMPONENTS[activePage.value]);
 
 .content {
 	flex: 1;
-	max-width: 720px;
+	max-width: 900px;
 	margin: 0 auto;
 	padding: 48px 24px 96px;
 	box-sizing: border-box;
@@ -83,5 +86,13 @@ body {
 	background: var(--byf-surface);
 	color: var(--byf-text);
 	font-family: Roboto, 'YouTube Sans', system-ui, sans-serif;
+}
+
+/* Center button labels; padding-only sizing sits off-baseline in Chromium. */
+button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
 }
 </style>

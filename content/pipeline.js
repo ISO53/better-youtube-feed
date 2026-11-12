@@ -6,7 +6,7 @@
 import { browser } from 'wxt/browser';
 
 import { findVideoCards, extractVideoInfo, currentSurface } from './extract.js';
-import { applyHiding, initHider } from './hide.js';
+import { applyHiding, initHider, setWhitelist } from './hide.js';
 
 const SCAN_INTERVAL_MS = 3000;
 const FLUSH_DELAY_MS = 150;
@@ -81,7 +81,7 @@ export function startFeedWatcher(ctx) {
 
 		for (const [videoId, card] of findVideoCards(root)) {
 			const info = extractVideoInfo(card);
-			const hidden = applyHiding(card, info);
+			const hidden = applyHiding(card, info, videoId);
 
 			// Observe each card element once; recycled elements update their id.
 			if (!observedCards.has(card)) exposure.observe(card);
@@ -143,15 +143,35 @@ export function startFeedWatcher(ctx) {
 	const onNavigated = () => scan(document);
 	document.addEventListener('yt-navigate-finish', onNavigated);
 
+	// Live whitelist updates pushed by the background script.
+	const onRuntimeMessage = (message) => {
+		if (message?.type !== 'whitelist/updated') return;
+		setWhitelist(message.ids ?? []);
+		scan(document);
+	};
+	browser.runtime.onMessage.addListener(onRuntimeMessage);
+
+	async function loadWhitelist() {
+		try {
+			const res = await browser.runtime.sendMessage({ type: 'whitelist/get' });
+			setWhitelist(res?.ids ?? []);
+		} catch {
+			// extension context gone; nothing to do
+		}
+	}
+
 	function stop() {
 		observer.disconnect();
 		exposure.disconnect();
 		clearInterval(intervalId);
 		clearTimeout(flushTimer);
 		document.removeEventListener('yt-navigate-finish', onNavigated);
+		browser.runtime.onMessage.removeListener(onRuntimeMessage);
 	}
 	ctx.onInvalidated(stop);
 
-	initHider().finally(() => scan(document)); // initial sweep (hider ready first)
+	// Initial sweep needs settings AND whitelist first, so flagged videos
+	// don't flash hidden before their first scan.
+	initHider().then(loadWhitelist).finally(() => scan(document));
 	return stop;
 }

@@ -44,6 +44,7 @@ const FILTERS = [
 	{ value: 'collect', label: 'Collected' },
 	{ value: 'hide', label: 'Hidden' },
 	{ value: 'unhide', label: 'Unhidden' },
+	{ value: 'whitelist', label: 'Whitelist' },
 	{ value: 'settings', label: 'Settings' },
 	{ value: 'error', label: 'Errors' },
 ];
@@ -112,9 +113,10 @@ onUnmounted(() => clearInterval(pollTimer));
 }
 
 .clear {
-	padding: 8px 16px;
+	height: 32px;
+	padding: 0 16px;
 	border: 1px solid var(--byf-text-dim);
-	border-radius: 18px;
+	border-radius: 16px;
 	background: transparent;
 	color: var(--byf-text);
 	font: 400 13px Roboto, 'YouTube Sans', system-ui, sans-serif;
@@ -142,6 +144,10 @@ onUnmounted(() => clearInterval(pollTimer));
 
 .badge-unhide {
 	color: #6bcB77;
+}
+
+.badge-whitelist {
+	color: var(--byf-link);
 }
 
 .video {

@@ -81,6 +81,7 @@ defineEmits(['update:modelValue']);
 .item {
 	display: flex;
 	align-items: center;
+	justify-content: flex-start;
 	gap: 20px;
 	width: 100%;
 	height: 40px;
