@@ -10,10 +10,12 @@ import { applyHiding, initHider, setRecorderWatched, setWhitelist } from './hide
 
 const SCAN_INTERVAL_MS = 3000;
 const FLUSH_DELAY_MS = 150;
-// Don't recount the same video within this window across overlapping triggers.
-const RECOUNT_WINDOW_MS = 1000;
 // A card counts as seen when at least this fraction is visible.
 const VISIBLE_RATIO = 0.5;
+// A sighting shorter than this is a scroll blip and never counts.
+const MIN_SIGHTING_MS = 1000;
+// At most one counted exposure per video in this window.
+const EXPOSURE_DEDUP_MS = 60_000;
 
 /**
  * Start watching the page. Cleans itself up when the content script is invalidated.
@@ -26,19 +28,30 @@ export function startFeedWatcher(ctx) {
 	const pendingRoots = new Set();
 	let flushTimer = null;
 
-	// Exposure: the observer reports every real visibility change, including
-	// cards that flash past between scans. Hidden (display:none) cards never
-	// intersect, so they never count as seen.
+	// Exposure = distinct sightings, not raw visibility ticks. A sighting
+	// starts when the card crosses into view and counts (once) when it leaves,
+	// if it stayed long enough; ratio oscillation around the threshold can't
+	// inflate the count, and hidden cards never intersect at all.
+	const inView = new Map(); // card element -> sighting start timestamp
 	const exposure = new IntersectionObserver(
 		(entries) => {
 			const now = Date.now();
 			for (const entry of entries) {
-				if (!entry.isIntersecting || entry.intersectionRatio < VISIBLE_RATIO) continue;
-				const rec = session.get(observedCards.get(entry.target));
-				if (!rec || now - rec.lastSeen < RECOUNT_WINDOW_MS) continue;
-				rec.lastSeen = now;
-				rec.seenCountDelta++;
-				dirty.add(rec);
+				const card = entry.target;
+				const visible = entry.isIntersecting && entry.intersectionRatio >= VISIBLE_RATIO;
+				const sighting = inView.get(card);
+
+				if (visible && !sighting) {
+					inView.set(card, now);
+				} else if (!visible && sighting) {
+					inView.delete(card);
+					if (now - sighting < MIN_SIGHTING_MS) continue;
+					const rec = session.get(observedCards.get(card));
+					if (!rec || now - rec.lastSeen < EXPOSURE_DEDUP_MS) continue;
+					rec.lastSeen = now;
+					rec.seenCountDelta++;
+					dirty.add(rec);
+				}
 			}
 			flushDirty();
 		},
