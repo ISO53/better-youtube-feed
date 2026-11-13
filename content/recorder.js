@@ -15,6 +15,7 @@ const MAIN_VIDEO_SELECTOR = '#movie_player video.html5-main-video';
 export function startRecorder(ctx) {
 	let thresholdPct = 50;
 	let enabled = true;
+	let watchPageOn = true; // enabledSurfaces.watch
 	let currentVideoId = null;
 	let maxPct = 0;
 	let marked = false;
@@ -24,16 +25,18 @@ export function startRecorder(ctx) {
 	getSettings().then((s) => {
 		thresholdPct = s.watchedThresholdPct;
 		enabled = s.recordWatches;
+		watchPageOn = s.enabledSurfaces?.watch ?? true;
 	});
 	browser.storage.onChanged.addListener((changes, area) => {
 		if (area !== 'local' || !changes.settings) return;
 		const next = changes.settings.newValue;
 		thresholdPct = next?.watchedThresholdPct ?? thresholdPct;
 		enabled = next?.recordWatches ?? enabled;
+		watchPageOn = next?.enabledSurfaces?.watch ?? true;
 	});
 
 	function onPositionEvent() {
-		if (!videoEl || marked || !enabled) return;
+		if (!videoEl || marked || !enabled || !watchPageOn) return;
 		const { currentTime, duration } = videoEl;
 		if (!Number.isFinite(duration) || duration <= 0) return; // live / unknown
 		const pct = (currentTime / duration) * 100;

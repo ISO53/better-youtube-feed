@@ -7,7 +7,15 @@ import { browser } from 'wxt/browser';
 
 import { requestTokens, sendNotInterested } from './bridge.js';
 import { findVideoCards, extractVideoInfo, currentSurface } from './extract.js';
-import { applyHiding, initHider, setIgnored, setRecorderWatched, setWhitelist } from './hide.js';
+import {
+	applyHiding,
+	clearHiding,
+	initHider,
+	isSurfaceEnabled,
+	setIgnored,
+	setRecorderWatched,
+	setWhitelist,
+} from './hide.js';
 
 const SCAN_INTERVAL_MS = 3000;
 const FLUSH_DELAY_MS = 150;
@@ -38,6 +46,12 @@ export function startFeedWatcher(ctx) {
 	const exposure = new IntersectionObserver(
 		(entries) => {
 			const now = Date.now();
+			// Sightings never count while the current surface is disabled;
+			// open sightings are dropped so re-enabling starts clean.
+			if (!isSurfaceEnabled(currentSurface())) {
+				inView.clear();
+				return;
+			}
 			for (const entry of entries) {
 				const card = entry.target;
 				const visible = entry.isIntersecting && entry.intersectionRatio >= VISIBLE_RATIO;
@@ -92,8 +106,16 @@ export function startFeedWatcher(ctx) {
 	// and hidden cards still get their (review-page) record.
 	function scan(root) {
 		const surface = currentSurface();
-		const now = Date.now();
 
+		// Disabled surface: the extension is off here. Cards stay visible
+		// (stale hide classes get cleared) and nothing is collected.
+		if (!isSurfaceEnabled(surface)) {
+			for (const [, card] of findVideoCards(root)) clearHiding(card);
+			flushDirty();
+			return;
+		}
+
+		const now = Date.now();
 		for (const [videoId, card] of findVideoCards(root)) {
 			const info = extractVideoInfo(card);
 			const hiddenReason = applyHiding(card, info, videoId);

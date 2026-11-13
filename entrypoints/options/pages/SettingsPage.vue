@@ -60,6 +60,13 @@
 					@update:model-value="onFeedbackToggle" />
 			</SettingsRow>
 		</SettingsGroup>
+
+		<SettingsGroup title="Active pages">
+			<SettingsRow v-for="page in SURFACES" :key="page.key" :label="page.label" :desc="page.desc">
+				<ToggleSwitch :model-value="settings.enabledSurfaces[page.key]" :label="page.label"
+					@update:model-value="(value) => onSurfaceToggle(page.key, value)" />
+			</SettingsRow>
+		</SettingsGroup>
 	</div>
 </template>
 
@@ -73,6 +80,21 @@ import ToggleSwitch from '../../../components/ui/ToggleSwitch.vue';
 import { recordSettingsChange } from '../../../lib/events.js';
 import { getSettings, setSettings } from '../../../lib/settings.js';
 
+// Feed surfaces (currentSurface()) with their toggle rows; defaults mirror
+// DEFAULT_SETTINGS.enabledSurfaces (home + watch on, the rest off).
+const SURFACES = [
+	{ key: 'home', label: 'Home feed',
+		desc: 'Enable/Disable this extension in the YouTube home page' },
+	{ key: 'subscriptions', label: 'Subscriptions',
+		desc: 'Enable/Disable this extension in the YouTube subscriptions page' },
+	{ key: 'search', label: 'Search results',
+		desc: 'Enable/Disable this extension in the YouTube search result page' },
+	{ key: 'watch', label: 'Watch pages',
+		desc: 'Enable/Disable this extension in the YouTube video pages. Watch recorder runs here' },
+	{ key: 'other', label: 'Other pages',
+		desc: 'Enable/Disable this extension in the YouTube channel pages, playlists and similar lists' },
+];
+
 // Settings live-save via explicit handlers (v-model would also fire on load).
 const settings = reactive({
 	hideWatched: true,
@@ -82,6 +104,7 @@ const settings = reactive({
 	ignoreThreshold: 5,
 	ignoreWindowDays: 14,
 	sendFeedback: true,
+	enabledSurfaces: { home: true, subscriptions: false, search: false, watch: true, other: false },
 });
 
 let thresholdTimer = null;
@@ -98,6 +121,7 @@ onMounted(async () => {
 	settings.ignoreThreshold = stored.ignoreThreshold;
 	settings.ignoreWindowDays = stored.ignoreWindowDays;
 	settings.sendFeedback = stored.sendFeedback;
+	Object.assign(settings.enabledSurfaces, stored.enabledSurfaces ?? {});
 });
 
 onBeforeUnmount(() => {
@@ -105,6 +129,14 @@ onBeforeUnmount(() => {
 	clearTimeout(ignoreTimer);
 	clearTimeout(windowTimer);
 });
+
+function onSurfaceToggle(key, value) {
+	settings.enabledSurfaces[key] = value;
+	// Fresh object so storage sees a change even when one key toggles twice.
+	setSettings({ enabledSurfaces: { ...settings.enabledSurfaces } });
+	const page = SURFACES.find((s) => s.key === key);
+	recordSettingsChange(`${page.label} turned ${value ? 'on' : 'off'}`);
+}
 
 function onHideToggle(value) {
 	settings.hideWatched = value;

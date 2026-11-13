@@ -49,6 +49,21 @@ export function setIgnored(ids) {
 }
 
 /**
+ * Whether the extension may act on this surface at all. Missing keys
+ * (older stored settings) count as enabled.
+ * @param {string} surface - from currentSurface()
+ * @returns {boolean}
+ */
+export function isSurfaceEnabled(surface) {
+	return settings.enabledSurfaces?.[surface] !== false;
+}
+
+/** Undo any hiding the extension applied to a card (used on disabled surfaces). */
+export function clearHiding(card) {
+	card.classList.remove(HIDDEN_CLASS);
+}
+
+/**
  * Hide/unhide one card and report why.
  * @param {Element} card
  * @param {{watched: boolean, watchedPct: number|null}} info - from extractVideoInfo
