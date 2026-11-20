@@ -19,12 +19,6 @@
 		<section class="chart-block">
 			<div class="chart-head">
 				<span class="chart-title">Daily activity</span>
-				<div class="legend">
-					<button v-for="s in SERIES" :key="s.key" :class="['chip', { active: visible.has(s.key) }]"
-						type="button" @click="toggleSeries(s.key)">
-						<span class="dot-marker" :style="{ background: s.color }"></span>{{ s.label }}
-					</button>
-				</div>
 			</div>
 			<LineChart v-if="hasChartData" :labels="chartLabels" :series="chartSeries" />
 			<p v-else class="empty">No activity yet — browse YouTube and come back.</p>
@@ -63,7 +57,6 @@ const rangeDays = ref(30);
 const stats = ref([]);
 const feedback = reactive({ sent: 0, resurfaced: 0, pending: 0, failed: 0 });
 const whitelisted = ref(0);
-const visible = ref(new Set(['hidden', 'feedbackSent']));
 let pollTimer = null;
 
 const SERIES = [
@@ -77,13 +70,6 @@ async function load() {
 	whitelisted.value = (await getWhitelistedIds()).length;
 }
 
-function toggleSeries(key) {
-	const next = new Set(visible.value);
-	if (next.has(key)) next.delete(key);
-	else next.add(key);
-	if (next.size > 0) visible.value = next; // keep at least one line
-}
-
 // Continuous date axis: missing days render as zero (store only writes on activity).
 const chartLabels = computed(() => {
 	const days = [];
@@ -92,7 +78,7 @@ const chartLabels = computed(() => {
 });
 
 const chartSeries = computed(() =>
-	SERIES.filter((s) => visible.value.has(s.key)).map((s) => ({
+	SERIES.map((s) => ({
 		key: s.key,
 		label: s.label,
 		color: s.color,
@@ -161,8 +147,7 @@ onUnmounted(() => clearInterval(pollTimer));
 	color: var(--byf-text);
 }
 
-.ranges,
-.legend {
+.ranges {
 	display: flex;
 	align-items: center;
 	gap: 6px;
@@ -186,12 +171,6 @@ onUnmounted(() => clearInterval(pollTimer));
 	background: var(--byf-hover);
 	color: var(--byf-text);
 	border-color: var(--byf-text-dim);
-}
-
-.dot-marker {
-	width: 8px;
-	height: 8px;
-	border-radius: 4px;
 }
 
 .cards {
