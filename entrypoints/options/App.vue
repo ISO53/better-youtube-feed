@@ -15,10 +15,12 @@ import DataPage from './pages/DataPage.vue';
 import HiddenPage from './pages/HiddenPage.vue';
 import LogsPage from './pages/LogsPage.vue';
 import SettingsPage from './pages/SettingsPage.vue';
+import StatsPage from './pages/StatsPage.vue';
 
 // Page shell: YouTube-style sidebar (LinkedIn placement) + centered narrow
 // content column. New pages: add a PAGES entry + component in PAGE_COMPONENTS.
 const PAGES = [
+	{ key: 'stats', icon: 'stats', label: 'Stats' },
 	{ key: 'settings', icon: 'settings', label: 'Settings' },
 	{ key: 'hidden', icon: 'hidden', label: 'Hidden videos' },
 	{ key: 'logs', icon: 'logs', label: 'Logs' },
@@ -26,6 +28,7 @@ const PAGES = [
 ];
 
 const PAGE_COMPONENTS = {
+	stats: StatsPage,
 	settings: SettingsPage,
 	hidden: HiddenPage,
 	logs: LogsPage,
@@ -61,6 +64,8 @@ const pageComponent = computed(() => PAGE_COMPONENTS[activePage.value]);
 	--byf-hover: #f2f2f2;
 	--byf-border: #e5e5e5;
 	--byf-link: #065fd4;
+	--byf-chart-1: #065fd4;
+	--byf-chart-2: #c9a227;
 	--byf-switch-track: #c8c8c8;
 	--byf-switch-knob: #fafafa;
 	--byf-switch-track-on: #0f0f0f;
@@ -76,6 +81,8 @@ const pageComponent = computed(() => PAGE_COMPONENTS[activePage.value]);
 		--byf-hover: #272727;
 		--byf-border: #272727;
 		--byf-link: #3ea6ff;
+		--byf-chart-1: #3ea6ff;
+		--byf-chart-2: #e0b64a;
 		--byf-switch-track: #545454;
 		--byf-switch-knob: #cfcfcf;
 		--byf-switch-track-on: #f1f1f1;

@@ -8,11 +8,13 @@ import {
 	getRecorderWatchedIds,
 	getWhitelistedIds,
 	markVideoWatched,
+	recordResurfacesIfDue,
 	upsertVideos,
 } from '../lib/db.js';
 import {
 	recordFeedbackFailed,
 	recordFeedbackSent,
+	recordResurface,
 	recordVideoEvents,
 	recordWatched,
 } from '../lib/events.js';
@@ -28,6 +30,12 @@ export default defineBackground(() => {
 		if (message?.type === 'videos/upsert') {
 			upsertVideos(message.videos)
 				.then(recordVideoEvents)
+				// Honor-rate signal: hidden videos with sent feedback being re-served.
+				.then(() =>
+					recordResurfacesIfDue(
+						message.videos.filter((v) => v.hidden).map((v) => v.videoId),
+					).then((counted) => Promise.all(counted.map((c) => recordResurface(c)))),
+				)
 				.then(() => syncIgnoredState())
 				.catch((err) => console.error('[byf] upsert failed:', err));
 		} else if (message?.type === 'video/watched') {

@@ -20,13 +20,13 @@
 </template>
 
 <script setup>
-import { BarChart3, Database, EyeOff, Logs, SlidersHorizontal } from 'lucide-vue-next';
+import { ChartLine, Database, EyeOff, Logs, SlidersHorizontal } from 'lucide-vue-next';
 import { browser } from 'wxt/browser';
 
 const ICONS = {
 	settings: SlidersHorizontal,
 	logs: Logs,
-	stats: BarChart3,
+	stats: ChartLine,
 	hidden: EyeOff,
 	data: Database,
 };
