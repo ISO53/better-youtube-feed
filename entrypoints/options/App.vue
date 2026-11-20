@@ -35,7 +35,7 @@ const PAGE_COMPONENTS = {
 	data: DataPage,
 };
 
-const activePage = ref('settings');
+const activePage = ref('stats');
 
 const pageComponent = computed(() => PAGE_COMPONENTS[activePage.value]);
 </script>
