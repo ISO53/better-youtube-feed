@@ -2,7 +2,7 @@
 	<div ref="root" class="select">
 		<button class="trigger" type="button" :aria-expanded="String(open)" @click="open = !open">
 			<span class="value">{{ selectedLabel }}</span>
-			<ChevronDown class="chevron" :size="20" />
+			<ChevronDown class="chevron" :size="20" :animate="open" />
 		</button>
 
 		<ul v-if="open" class="menu" role="listbox">
@@ -10,7 +10,7 @@
 				<button :class="['option', { selected: option.value === modelValue }]" type="button" role="option"
 					:aria-selected="String(option.value === modelValue)" @click="pick(option.value)">
 					<span class="option-label">{{ option.label }}</span>
-					<Check v-if="option.value === modelValue" :size="18" class="icon" />
+					<Check v-if="option.value === modelValue" :size="18" class="icon" animate />
 				</button>
 			</li>
 		</ul>
@@ -18,8 +18,9 @@
 </template>
 
 <script setup>
-import { Check, ChevronDown } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import Check from '../animate-ui/icons/Check.vue';
+import ChevronDown from '../animate-ui/icons/ChevronDown.vue';
 
 const props = defineProps({
 	modelValue: { type: [String, Number], required: true },
@@ -71,7 +72,6 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick));
 
 .chevron {
 	color: var(--byf-text-dim);
-	transition: transform 150ms ease;
 }
 
 .menu {

@@ -2,17 +2,20 @@
 	<main class="popup">
 		<h1 class="title">Better Youtube Feed</h1>
 		<p class="status">{{ statusLine }}</p>
-		<button class="open-settings" type="button" @click="openSettings">
-			<Settings :size="18" />
-			<span>Open settings</span>
-		</button>
+		<AnimateIcon as-child animate-on-hover>
+			<button class="open-settings" type="button" @click="openSettings">
+				<Settings :size="18" />
+				<span>Open settings</span>
+			</button>
+		</AnimateIcon>
 	</main>
 </template>
 
 <script setup>
-import { Settings } from 'lucide-vue-next';
+import { AnimateIcon } from '@animate-ui/vue/icons';
 import { computed } from 'vue';
 import { browser } from 'wxt/browser';
+import Settings from '../../components/animate-ui/icons/Settings.vue';
 
 // Popup root: quick summary (grows per feature) + link to the full page.
 const statusLine = computed(() => 'Hiding watched videos.');

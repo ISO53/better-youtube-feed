@@ -7,11 +7,13 @@
 
 		<ul class="items">
 			<li v-for="item in items" :key="item.key">
-				<button :class="['item', { active: item.key === modelValue }]" type="button"
-					@click="$emit('update:modelValue', item.key)">
-					<component :is="ICONS[item.icon]" :size="24" />
-					<span class="label">{{ item.label }}</span>
-				</button>
+				<AnimateIcon as-child animate-on-hover>
+					<button :class="['item', { active: item.key === modelValue }]" type="button"
+						@click="$emit('update:modelValue', item.key)">
+						<component :is="ICONS[item.icon]" :size="24" />
+						<span class="label">{{ item.label }}</span>
+					</button>
+				</AnimateIcon>
 			</li>
 		</ul>
 
@@ -20,8 +22,13 @@
 </template>
 
 <script setup>
-import { ChartLine, Database, EyeOff, Logs, SlidersHorizontal } from 'lucide-vue-next';
+import { AnimateIcon } from '@animate-ui/vue/icons';
 import { browser } from 'wxt/browser';
+import ChartLine from '../animate-ui/icons/ChartLine.vue';
+import Database from '../animate-ui/icons/Database.vue';
+import EyeOff from '../animate-ui/icons/EyeOff.vue';
+import Logs from '../animate-ui/icons/Logs.vue';
+import SlidersHorizontal from '../animate-ui/icons/SlidersHorizontal.vue';
 
 const ICONS = {
 	settings: SlidersHorizontal,
