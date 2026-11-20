@@ -27,6 +27,7 @@ import { browser } from 'wxt/browser';
 import ChartLine from '../animate-ui/icons/ChartLine.vue';
 import Database from '../animate-ui/icons/Database.vue';
 import EyeOff from '../animate-ui/icons/EyeOff.vue';
+import Info from '../animate-ui/icons/Info.vue';
 import Logs from '../animate-ui/icons/Logs.vue';
 import SlidersHorizontal from '../animate-ui/icons/SlidersHorizontal.vue';
 
@@ -36,6 +37,7 @@ const ICONS = {
 	stats: ChartLine,
 	hidden: EyeOff,
 	data: Database,
+	about: Info,
 };
 
 /** @param {{ key: string, icon: string, label: string }[]} items */
