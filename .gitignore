@@ -25,6 +25,3 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
-
-# Local research notes
-research/
