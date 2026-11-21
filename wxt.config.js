@@ -9,4 +9,9 @@ export default defineConfig({
 			"Stop YouTube from recommending videos you've already watched or keep ignoring. All data stays in your browser.",
 		permissions: ['storage'],
 	},
+	// Stable release filenames: the version lives in the manifest, not the zip name.
+	zip: {
+		artifactTemplate: '{{name}}-{{browser}}.zip',
+		sourcesTemplate: '{{name}}-{{browser}}-sources.zip',
+	},
 });
